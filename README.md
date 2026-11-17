@@ -10,6 +10,14 @@ Bridge между [Lekalo](https://github.com/ichinya/lekalo) и [HLV](https://g
 
 `src/lib.rs` владеет HLV-политикой однозначного сопоставления test/gate с внешней ревизией. Отсутствие, несколько соответствий и устаревшая ревизия возвращаются отдельно. Общий граф, проверка trace manifest и коды диагностики принадлежат ядру.
 
-Проверка: `cargo test --locked`. Это перенос уже существующей HLV-политики. Новый протокол исполнения внешнего HLV-трейсера и загрузка bridge из конфига остаются в #1; библиотека не выдаёт этот перенос за готовую интеграцию с внешним сервисом.
+Проверка: `cargo test --locked`. Это перенос уже существующей HLV-политики. Сопоставление доступно через внешний процесс и выбирается в конфиге. Исполнение самого HLV-трейсера остаётся отдельной задачей #1.
 
 `ci/package-workflow.yml` — неактивный шаблон CI. Для автоматического запуска его нужно установить в `.github/workflows/` учётными данными с правом `workflow`; текущая публикация проверена локально.
+
+## Процессный сервис
+
+```sh
+cargo install --locked --path . --root /your/tools
+```
+
+Добавьте `/your/tools/bin` в PATH, укажите `services.trace: {command: [lekalo-hlv]}` в `lekalo.yaml` и выполните `lekalo runtime lock`. Процесс реализует `describe` и `trace.mappings` в оболочке `lekalo/runtime/v1`. Ядро не компилирует этот пакет и не содержит его копии. [Схемы и ограничения](https://github.com/ichinya/lekalo/blob/feat/external-services-241/docs/external-services.md). Сборка использует `debug=0`, `incremental=false`.
