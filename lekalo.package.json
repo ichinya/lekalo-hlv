@@ -1,0 +1,12 @@
+{
+  "schema": "lekalo/package/v1",
+  "id": "lekalo-hlv",
+  "kind": "runtime",
+  "version": "0.1.0",
+  "command": [
+    "lekalo-hlv"
+  ],
+  "files": [
+    "Cargo.toml"
+  ]
+}
