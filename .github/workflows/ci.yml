@@ -1,0 +1,47 @@
+name: Package CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.89.0
+      - run: cargo test --locked
+  execution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: lee-to/hlv
+          ref: f23d9622bc46124e6ea8462eceea01ee04edc4fd
+          path: .ci/hlv
+          sparse-checkout: tests/fixtures/execution-evidence-project
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install ./runner
+      - name: Run execution evidence tests against HLV 1.1.0
+        env:
+          HLV_FIXTURE: ${{ github.workspace }}/.ci/hlv/tests/fixtures/execution-evidence-project
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 --output "$RUNNER_TEMP/hlv.tgz" https://github.com/lee-to/hlv/releases/download/v1.1.0/hlv-x86_64-unknown-linux-gnu.tar.gz
+          echo "4d526483d0ae7f728cd29f389be25075a7e2e9719907ff322735cb9fe76e5007  $RUNNER_TEMP/hlv.tgz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/hlv.tgz" -C "$RUNNER_TEMP" hlv
+          export HLV_BIN="$RUNNER_TEMP/hlv"
+          test -d "$HLV_FIXTURE"
+          python -m unittest discover -s runner/tests -v
