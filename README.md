@@ -21,3 +21,5 @@ cargo install --locked --path . --root /your/tools
 ```
 
 Добавьте `/your/tools/bin` в PATH, укажите `services.trace: {command: [lekalo-hlv]}` в `lekalo.yaml` и выполните `lekalo runtime lock`. Процесс реализует `describe` и `trace.mappings` в оболочке `lekalo/runtime/v1`. Ядро не компилирует этот пакет и не содержит его копии. [Схемы и ограничения](https://github.com/ichinya/lekalo/blob/feat/external-services-241/docs/external-services.md). Сборка использует `debug=0`, `incremental=false`.
+
+После установки бинарника в PATH можно указать `gh/ichinya/lekalo-hlv` в services. При lock ядро сверяет идентичность и версию исполняемого сервиса с Git-манифестом.
