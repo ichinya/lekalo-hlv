@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lekalo-hlv-runner"
+version = "0.1.0"
+description = "Bind explicit native runner results to HLV evidence snapshots"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0,<7"]
+
+[project.scripts]
+lekalo-hlv-run = "lekalo_hlv_run:main"
+
+[tool.setuptools]
+py-modules = ["lekalo_hlv_run"]

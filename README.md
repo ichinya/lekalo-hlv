@@ -23,3 +23,23 @@ cargo install --locked --path . --root /your/tools
 Добавьте `/your/tools/bin` в PATH, укажите `services.trace: {command: [lekalo-hlv]}` в `lekalo.yaml` и выполните `lekalo runtime lock`. Процесс реализует `describe` и `trace.mappings` в оболочке `lekalo/runtime/v1`. Ядро не компилирует этот пакет и не содержит его копии. [Схемы и ограничения](https://github.com/ichinya/lekalo/blob/feat/external-services-241/docs/external-services.md). Сборка использует `debug=0`, `incremental=false`.
 
 После установки бинарника в PATH можно указать `gh/ichinya/lekalo-hlv` в services. При lock ядро сверяет идентичность и версию исполняемого сервиса с Git-манифестом.
+
+### Исполнение с HLV evidence v1
+
+`pipx install ./runner` устанавливает команду `lekalo-hlv-run`. Требуется
+`hlv` с командами `evidence snapshot` и `check --strict --structural-only`.
+В HLV `project.yaml` настройте `execution_evidence` и области входов.
+В проверенном файле плана каждому binding ID соответствует массив аргументов
+реального теста, например `{"api-contract": ["lekalo", "validate", "--strict"]}`.
+Значение `null` явно пропускает проверку.
+
+```sh
+lekalo-hlv-run --root . --plan ci/hlv-runners.json --revision "$GIT_COMMIT" --run-id "$CI_RUN_ID"
+```
+
+Команда вызывает строгую структурную проверку, снимает HLV snapshots до и
+после каждого процесса, сохраняет его вывод в `.lekalo/hlv-runs` и атомарно
+публикует HLV run manifest по пути из `project.yaml`. Изменение входов даёт
+`incomplete`, ненулевой код теста даёт `failed`. После публикации команда
+выполняет полный `hlv check --strict --json` с настроенными gates и сверяет
+run ID и редакцию. Простое подключение `services.trace` выполняет только mapping.
